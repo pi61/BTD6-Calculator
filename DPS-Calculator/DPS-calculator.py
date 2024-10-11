@@ -16,9 +16,9 @@ getting 15.38% more dps compared to unbuffed.
 #Tower info
 TOWER_NAME = "003 Sniper"
 BASE_COOLDOWN  = 0.2597 
-BASE_COOLDOWN *= 0.97 #Remove this line if disabled MK
+BASE_COOLDOWN *= 0.97 #Remove this line or change it to a 1 if disabled MK
 BASE_DAMAGE = 2
-BASE_PROJECTILE = 1
+PROJECTILE_COUNT = 3
 
 #Buff uptime
 OVERCLOCK = 0
