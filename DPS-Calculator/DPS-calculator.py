@@ -62,7 +62,7 @@ def merge_rate(buffed):
     return max(1, 1/120 / attack_cooldown(buffed))
     
 def damage_per_attack(buffed):
-    return BASE_DAMAGE * merge_rate(buffed) + debuff_bonus()
+    return (BASE_DAMAGE * merge_rate(buffed) + debuff_bonus()) * PROJECTILE_COUNT
 
 def DPS(buffed):
     return damage_per_attack(buffed) / attack_cooldown(buffed)
