@@ -16,9 +16,9 @@ getting 15.38% more dps compared to unbuffed.
 #Tower info
 TOWER_NAME = "003 Sniper"
 BASE_COOLDOWN  = 0.2597 
-BASE_COOLDOWN *= 0.97 #Remove this line or change this to a 1 if Monkey Knowledge is disabled
+BASE_COOLDOWN *= 0.97 #Remove this line if disabled MK
 BASE_DAMAGE = 2
-PROJECTILE_COUNT = 1
+BASE_PROJECTILE = 1
 
 #Buff uptime
 OVERCLOCK = 0
@@ -34,8 +34,8 @@ CUSTOM_DEBUFF = 1
 
 #Debuff uptime
 #This only matters when the tower attacks very quickly
-CRIPPLE = 1.0
-GLUE = 0.75
+CRIPPLE = 1 
+GLUE = 0.7
 EMBRIT = 0
 SBRIT = 0
 ############# USER INPUT ENDS HERE #################
@@ -57,7 +57,8 @@ def debuff_bonus():
 def damage_buff_bonus():
     return BASE_DAMAGE * 2 * HOMELAND + PERMABREW * 2 
 
-def merge_rate(buffed): #How many projectiles are being merged into one
+#How many projectiles are being merged into one
+def merge_rate(buffed):
     return max(1, 1/120 / attack_cooldown(buffed))
     
 def damage_per_attack(buffed):
@@ -69,6 +70,7 @@ def DPS(buffed):
 def main():
     print("Unbuffed DPS: %.5f" % DPS(False))
     print("Buffed DPS: %.5f" % DPS(True))
-    print("Your " + TOWER_NAME + " is %.5f%% stronger than a base tower." % (DPS(True) / DPS(False)))
+    print("Multiplier: %.5f" % (DPS(True)/DPS(False)))
+    print("Your " + TOWER_NAME + " is %.5f%% stronger than a base tower." % ((DPS(True) / DPS(False) - 1) * 100))
     
 main()
