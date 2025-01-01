@@ -12,7 +12,7 @@ if MONKEY_KNOWLEDGE:
     baseGerryCost *= 0.9
     STARTING_CASH += 200
 
-budget = [121, 137, 138, 175, 164, 163, 182, 200, 199, 314, 189, 192, 282, 259, 266,     268, 165, 358, 260]
+budget = [121, 137, 138, 175, 164, 163, 182, 200, 199, 314, 189, 192, 282, 259, 266, 268, 165, 358, 260]
 budget = [v-1 for v in budget]
 budget[0] += STARTING_CASH - 101
 
