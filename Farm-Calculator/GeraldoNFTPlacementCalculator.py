@@ -13,9 +13,9 @@ if MONKEY_KNOWLEDGE:
     baseGerryCost *= 0.9
     STARTING_CASH += 200
 
-budget = [121, 137, 138, 175, 164, 163, 182, 200, 199, 314, 189, 192, 282, 259, 266, 268, 165, 358, 260, 186, 351, 298, 277, 167, 335, 333, 662, 266, 389, 337]
-budget = [v-1 for v in budget]
-budget[0] += STARTING_CASH - 101
+roundIncome = [121, 137, 138, 175, 164, 163, 182, 200, 199, 314, 189, 192, 282, 259, 266, 268, 165, 358, 260, 186, 351, 298, 277, 167, 335, 333, 662, 266, 389, 337]
+roundBudget = [v-1 for v in roundIncome]
+roundBudget[0] += STARTING_CASH - 101
 
 resultList = []
 
@@ -39,7 +39,7 @@ def checkValue(gerryRounds):
     totalValue = 0
     
     for roundNumber in range(0, 30):
-        cash += budget[roundNumber]
+        cash += roundBudget[roundNumber]
         
         for gerry in range(0, len(gerryRounds)):
             if (gerryPlaced[gerry] == False):
@@ -68,7 +68,7 @@ def checkValue(gerryRounds):
     [i + 1 for i in gerryRounds], [i + 1 for i in nftRounds]])
     
 def main():
-    for i in range(0, 30):
+    for i in range(0, 10):
         if NUMBER_OF_PLAYERS == 1:
             checkValue([i])
             continue;
