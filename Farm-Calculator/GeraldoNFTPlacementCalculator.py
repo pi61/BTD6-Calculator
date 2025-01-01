@@ -4,6 +4,7 @@ import math
 STARTING_CASH = 650
 DIFFICULTY = 1
 MONKEY_KNOWLEDGE = True
+NUMBER_OF_PLAYERS = 4
 
 baseGerryCost = [640,750,810][DIFFICULTY]
 baseNFTCost = [550,650,700][DIFFICULTY]
@@ -12,9 +13,11 @@ if MONKEY_KNOWLEDGE:
     baseGerryCost *= 0.9
     STARTING_CASH += 200
 
-budget = [121, 137, 138, 175, 164, 163, 182, 200, 199, 314, 189, 192, 282, 259, 266, 268, 165, 358, 260]
+budget = [121, 137, 138, 175, 164, 163, 182, 200, 199, 314, 189, 192, 282, 259, 266, 268, 165, 358, 260, 186, 351, 298, 277, 167, 335, 333, 662, 266, 389, 337]
 budget = [v-1 for v in budget]
 budget[0] += STARTING_CASH - 101
+
+resultList = []
 
 def nftCost(gerryRound, nftRound):
     result = baseNFTCost
@@ -35,7 +38,7 @@ def checkValue(gerryRounds):
     cashSpentOnNFT = 0
     totalValue = 0
     
-    for roundNumber in range(0, 18):
+    for roundNumber in range(0, 30):
         cash += budget[roundNumber]
         
         for gerry in range(0, len(gerryRounds)):
@@ -43,7 +46,7 @@ def checkValue(gerryRounds):
                 if (gerryRounds[gerry] != roundNumber):
                     break
                 elif (gerry > 0 and nftRounds[gerry - 1] == -1) or cash < baseGerryCost:
-                    return -1
+                    return 
                 else:
                     gerryPlaced[gerry] = True
                     cash -= baseGerryCost
@@ -52,40 +55,47 @@ def checkValue(gerryRounds):
                 cost = nftCost(gerryRounds[gerry], roundNumber)
                 if cash >= cost:
                     cash -= cost 
-                    cash += round(baseGerryCost * 0.75) #Sells Geraldo
+                    cash += round(baseGerryCost * 0.75) #Sells previous Geraldo
                     nftRounds[gerry] = roundNumber
                     cashSpentOnNFT += cost
         
     for gerry in range(0, len(gerryRounds)):
         if nftRounds[gerry] == -1:
-            return -1
+            return 
         totalValue += Round31Value(gerryRounds[gerry])
         
-    return [totalValue, cashSpentOnNFT, gerryRounds, nftRounds]
-    
+    resultList.append([totalValue, cashSpentOnNFT, 
+    [i + 1 for i in gerryRounds], [i + 1 for i in nftRounds]])
     
 def main():
-    maxResult = 0
-    firstRound = 0
-    secondRound = 0
-    cashSpent = 0
-    for i in range(0, 10):
-        for j in range(i, 10):
-            result = checkValue([i,j])
-            if result == -1:
-                continue
+    for i in range(0, 30):
+        if NUMBER_OF_PLAYERS == 1:
+            checkValue([i])
+            continue;
             
-            print([i + 1, j + 1, result])
-            
-            if maxResult < result[0]:
-                maxResult = result[0]
-                cashSpent = result[1]
-                firstRound = i + 1
-                secondRound = j + 1
-            
-            break
+        for j in range(i, 30):
+            if NUMBER_OF_PLAYERS == 2:
+                checkValue([i,j])
+                continue;
+                
+            for k in range(j, 30):
+                if NUMBER_OF_PLAYERS == 3:
+                    checkValue([i,j,k])
+                    continue;
+                
+                for l in range(k, 30):
+                    checkValue([i,j,k,l])
     
-    print(str(maxResult) + " is the maximum value for " + str(cashSpent) + " cash spent on NFTs.")
-    print("Placement round of the 2 Geraldos are " + str(firstRound) + " and " + str(secondRound))
+    print("Top 10 best results are: ")
+    resultList.sort(key=lambda res: res[1] - res[0])
+    for i in range(0, min(10, len(resultList))):
+        print(resultList[i])
+    print()
     
+    if len(resultList) > 0: 
+        maxResult = resultList[0]
+        print("Max value at r31 is " + str(maxResult[0]) + " for " + str(maxResult[1]) + " spent on NFTs.")
+        print("Geraldo placement rounds: " + str(maxResult[2]))
+        print("NFT placement rounds: " + str(maxResult[3]))
+
 main()
