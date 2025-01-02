@@ -1,33 +1,42 @@
-#Determines the optimal round to purchase Geraldo NFT
+'''
+This calculator determines the optimal round to purchase Geraldo NFT, in order to sell them after round 30, by brute forcing through all possible placement order and timing.
+The 10 results with the best (value - cash spent) are printed.
+Assumes all MK are enabled.
+'''
 import math
 
-STARTING_CASH = 650
-DIFFICULTY = 1
-MONKEY_KNOWLEDGE = True
-NUMBER_OF_PLAYERS = 4
+############## USER INPUT ##################
+STARTING_ROUND = 1
+STARTING_CASH = 850 #If you have extra starting cash MK enabled, take it into account.
+DIFFICULTY = 1 # 0 - easy, 1 - medium, 2 - hard, 3 - impoppable
+NUMBER_OF_PLAYERS = 3
+############################################
 
-baseGerryCost = [640,750,810][DIFFICULTY]
-baseNFTCost = [550,650,700][DIFFICULTY]
-
-if MONKEY_KNOWLEDGE:
-    baseGerryCost *= 0.9
-    STARTING_CASH += 200
+def floor5(number):
+    return math.floor(number / 5) * 5
+    
+def roundTo5(number):
+    return round(number / 5) * 5
+    
+difficultyMultiplier = [0.85, 1, 1.08, 1.2]
+baseGerryCost = roundTo5(750 * 0.9 * difficultyMultiplier[DIFFICULTY])
+baseNFTCost = 650 * difficultyMultiplier[DIFFICULTY]
 
 roundIncome = [121, 137, 138, 175, 164, 163, 182, 200, 199, 314, 189, 192, 282, 259, 266, 268, 165, 358, 260, 186, 351, 298, 277, 167, 335, 333, 662, 266, 389, 337]
 roundBudget = [v-1 for v in roundIncome]
-roundBudget[0] += STARTING_CASH - 101
+roundBudget[STARTING_ROUND - 1] += STARTING_CASH - 100 - STARTING_ROUND
 
 resultList = []
-
+    
 def nftCost(gerryRound, nftRound):
-    result = baseNFTCost
-    for i in range(gerryRound, nftRound - 1):
-        result = round(result * 1.1 / 5) * 5
-    return result
+    power = max(0, nftRound - gerryRound - 1)
+    multiplier = 1.1 ** power
+    return roundTo5(baseNFTCost * multiplier)
 
-def Round31Value(gerryRound):
-    cost = nftCost(gerryRound, 31)
-    sellValue = 550 + (cost - 550) * 0.95
+def nftSellValue(gerryRound, sellRound):
+    power = max(0, sellRound - gerryRound - 1)
+    multiplier = 0.95 * (1.1 ** power) 
+    sellValue = math.ceil(floor5(baseNFTCost) * (multiplier + 0.05))
     return sellValue
     
 def checkValue(gerryRounds):
@@ -35,10 +44,10 @@ def checkValue(gerryRounds):
     gerryRounds.sort()
     gerryPlaced = [False for v in gerryRounds]
     nftRounds = [-1 for v in gerryRounds]
-    cashSpentOnNFT = 0
+    cashSpentOnNft = 0
     totalValue = 0
     
-    for roundNumber in range(0, 30):
+    for roundNumber in range(STARTING_ROUND - 1, 30):
         cash += roundBudget[roundNumber]
         
         for gerry in range(0, len(gerryRounds)):
@@ -57,18 +66,18 @@ def checkValue(gerryRounds):
                     cash -= cost 
                     cash += round(baseGerryCost * 0.75) #Sells previous Geraldo
                     nftRounds[gerry] = roundNumber
-                    cashSpentOnNFT += cost
-        
+                    cashSpentOnNft += cost
+            
     for gerry in range(0, len(gerryRounds)):
         if nftRounds[gerry] == -1:
             return 
-        totalValue += Round31Value(gerryRounds[gerry])
+        totalValue += nftSellValue(gerryRounds[gerry], 30)
         
-    resultList.append([totalValue, cashSpentOnNFT, 
+    resultList.append([totalValue, cashSpentOnNft, 
     [i + 1 for i in gerryRounds], [i + 1 for i in nftRounds]])
     
 def main():
-    for i in range(0, 10):
+    for i in range(STARTING_ROUND - 1, 30):
         if NUMBER_OF_PLAYERS == 1:
             checkValue([i])
             continue;
@@ -94,7 +103,7 @@ def main():
     
     if len(resultList) > 0: 
         maxResult = resultList[0]
-        print("Max value at r31 is " + str(maxResult[0]) + " for " + str(maxResult[1]) + " spent on NFTs.")
+        print("Max value sell at r31 is " + str(maxResult[0]) + " for " + str(maxResult[1]) + " spent on NFTs.")
         print("Geraldo placement rounds: " + str(maxResult[2]))
         print("NFT placement rounds: " + str(maxResult[3]))
 
