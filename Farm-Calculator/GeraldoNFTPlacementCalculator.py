@@ -1,6 +1,7 @@
 '''
 This calculator determines the optimal round to purchase Geraldo NFT, in order to sell them after round 30, by brute forcing through all possible placement order and timing.
 The 10 results with the best (value - cash spent) are printed.
+For co-op, Geraldos are assumed to be sold after NFT is placed down, except for the final Geraldo.
 Assumes all MK are enabled.
 '''
 import math
@@ -13,16 +14,18 @@ class RoundType(Enum):
     CUSTOM = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #Always leave a starting 0, for "Round 0"
     
 ############## USER INPUT ##################
+PRETTY = True #False for a compact output. True for an extended, readable output
 STARTING_ROUND = 1
 STARTING_CASH = 850 #If you have extra starting cash MK enabled, take it into account.
 DIFFICULTY = 1 # 0 - easy, 1 - medium, 2 - hard, 3 - impoppable
 NUMBER_OF_PLAYERS = 1
 NUMBER_OF_RESULTS = 10
-PRETTY = False #False for a compact output. True for an extended, readable output
-ROUND_TYPE = RoundType.VORTEX 
+ROUND_TYPE = RoundType.REGULAR 
+SELL_LAST_GERALDO = False #If True, sells the final geraldo. This only matters when selling is required to afford defense in time, which is extremely rare.
 
 #Cash spent on defense on certain rounds, after getting some income from round. Format: [Round, Cash spent, Duration (optional)]
 DEFENSE_INPUT = [
+    
     [5, 150], # $150 spent at start of r5
     [10, 200, 15], # $200 spent on r10 after collecting $15 from round income
     [10, 250, 7],
@@ -41,8 +44,9 @@ baseGerryCost = roundTo5(750 * 0.9 * difficultyMultiplier[DIFFICULTY])
 baseNFTCost = 650 * difficultyMultiplier[DIFFICULTY]
 
 roundIncome = ROUND_TYPE.value
-roundFarmingBudget = [v - 1 for v in roundIncome]
-roundFarmingBudget[STARTING_ROUND - 1] = STARTING_CASH - 100 - STARTING_ROUND
+roundBudget = [v - 1 for v in roundIncome]
+roundBudget[STARTING_ROUND - 1] = STARTING_CASH - 100 - STARTING_ROUND
+roundFarmingBudget = [v for v in roundBudget]
 roundDefensiveBudget = [0 for v in roundFarmingBudget]
 
 for i in DEFENSE_INPUT:
@@ -72,13 +76,14 @@ for i in range(30, STARTING_ROUND - 1, -1):
         sumOfSpending += defense[1]
         startingCash = max(0, sumOfSpending - defense[2])
     
-    debt += max(0, startingCash - (100 + i - 1))
+    #Calculate defense saveup backward, prevent overspending on Geraldos and NFTs
+    debt += max(0, startingCash - (100 + i))
     temp = min(roundFarmingBudget[i - 1], debt)
     roundDefensiveBudget[i - 1] += temp
     roundFarmingBudget[i - 1] -= temp
     debt -= temp
-    roundFarmingBudget[i] -= (sumOfSpending - max(0, startingCash - (100 + i - 1)))  
-    roundDefensiveBudget[i] += (sumOfSpending - max(0, startingCash - (100 + i - 1)))
+    roundFarmingBudget[i] -= (sumOfSpending - max(0, startingCash - (100 + i)))  
+    roundDefensiveBudget[i] += (sumOfSpending - max(0, startingCash - (100 + i)))
     
 if (debt > 0):
     print("Defensive budget too large. Unable to saveup.")
@@ -99,7 +104,7 @@ def nftSellValue(gerryRound, sellRound):
     return sellValue
     
 def checkValue(gerryRounds):
-    farmingBudget = 0
+    totalBudget = 0
     defensiveBudget = 0
     gerryRounds.sort()
     gerryPlaced = [[-1, 0] for v in gerryRounds]
@@ -108,28 +113,35 @@ def checkValue(gerryRounds):
     totalValue = 0
     
     for roundNumber in range(STARTING_ROUND - 1, 31):
-        farmingBudget += roundFarmingBudget[roundNumber]
-        defensiveBudget += roundDefensiveBudget[roundNumber]
+        defenseCashSpent = 0
+        for defenses in defenseRounds[roundNumber]:
+            defenseCashSpent += defenses[1]
+        totalBudget += roundBudget[roundNumber] - defenseCashSpent
+        defensiveBudget += roundDefensiveBudget[roundNumber] - defenseCashSpent
+        bonusBudget = 0
         
         for gerry in range(0, len(gerryRounds)):
             if (gerryPlaced[gerry][0] == -1):
                 if (gerryRounds[gerry] != roundNumber):
                     break
-                elif (gerry > 0 and nftRounds[gerry - 1][0] == -1) or farmingBudget < baseGerryCost:
+                elif (gerry > 0 and nftRounds[gerry - 1][0] == -1) or totalBudget - defensiveBudget < baseGerryCost:
                     return 
                 else:
                     gerryPlaced[gerry][0] = roundNumber
-                    farmingBudget -= baseGerryCost
-                    gerryPlaced[gerry][1] = farmingBudget + defensiveBudget
-                    
+                    totalBudget -= baseGerryCost
+                    gerryPlaced[gerry][1] = totalBudget
+            
+            if (gerry < len(gerryRounds) - 1):
+                bonusBudget = math.ceil(baseGerryCost * 0.75) #Sells Geraldo
+                
             if gerryPlaced[gerry][0] != -1 and nftRounds[gerry][0] == -1:
                 cost = nftCost(gerryRounds[gerry], roundNumber)
-                if farmingBudget >= cost:
-                    farmingBudget -= cost 
-                    nftRounds[gerry][1] = farmingBudget + defensiveBudget
+                if totalBudget >= cost and totalBudget - cost + bonusBudget >= defensiveBudget:
+                    totalBudget -= cost 
+                    nftRounds[gerry][1] = totalBudget 
                     nftRounds[gerry][0] = roundNumber
                     cashSpentOnNft += cost
-                    farmingBudget += round(baseGerryCost * 0.75) #Sells previous Geraldo
+                    totalBudget += bonusBudget
             
     for gerry in range(0, len(gerryRounds)):
         if nftRounds[gerry][0] == -1:
