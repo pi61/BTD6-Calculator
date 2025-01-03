@@ -1,7 +1,7 @@
 '''
 This calculator determines the optimal round to purchase Geraldo NFT, in order to sell them after round 30, by brute forcing through all possible placement order and timing.
 The 10 results with the best (value - cash spent) are printed.
-For co-op, Geraldos are assumed to be sold after NFT is placed down, except for the final Geraldo.
+Geraldos are assumed to be sold after NFT is placed down, except for the final Geraldo.
 Assumes all MK are enabled.
 '''
 import math
