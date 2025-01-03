@@ -1,7 +1,7 @@
 '''
 This calculator determines the optimal round to purchase Geraldo NFT, in order to sell them after round 30, by brute forcing through all possible placement order and timing.
 The 10 results with the best (value - cash spent) are printed.
-Geraldos are assumed to be sold after NFT is placed down, except for the final Geraldo.
+For co-op, Geraldos are assumed to be sold after NFT is placed down, except for the final Geraldo.
 Assumes all MK are enabled.
 '''
 import math
@@ -130,7 +130,7 @@ def checkValue(gerryRounds):
                     totalBudget -= baseGerryCost
                     gerryPlaced[gerry][1] = totalBudget
             
-            if (gerry < len(gerryRounds) - 1):
+            if (gerry < len(gerryRounds) - 1 or SELL_LAST_GERALDO):
                 bonusBudget = math.ceil(baseGerryCost * 0.75) #Sells Geraldo
                 
             if gerryPlaced[gerry][0] != -1 and nftRounds[gerry][0] == -1:
