@@ -25,7 +25,6 @@ SELL_LAST_GERALDO = False #If True, sells the final geraldo. This only matters w
 
 #Cash spent on defense on certain rounds, after getting some income from round. Format: [Round, Cash spent, Duration (optional)]
 DEFENSE_INPUT = [
-    
     [5, 150], # $150 spent at start of r5
     [10, 200, 15], # $200 spent on r10 after collecting $15 from round income
     [10, 250, 7],
