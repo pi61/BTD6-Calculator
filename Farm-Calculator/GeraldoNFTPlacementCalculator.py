@@ -11,6 +11,7 @@ STARTING_CASH = 850 #If you have extra starting cash MK enabled, take it into ac
 DIFFICULTY = 1 # 0 - easy, 1 - medium, 2 - hard, 3 - impoppable
 NUMBER_OF_PLAYERS = 4
 NUMBER_OF_RESULTS = 10
+PRETTY = False #False for a compact output. True for an extended, readable output
 ############################################
 
 def floor5(number):
@@ -23,9 +24,9 @@ difficultyMultiplier = [0.85, 1, 1.08, 1.2]
 baseGerryCost = roundTo5(750 * 0.9 * difficultyMultiplier[DIFFICULTY])
 baseNFTCost = 650 * difficultyMultiplier[DIFFICULTY]
 
-roundIncome = [121, 137, 138, 175, 164, 163, 182, 200, 199, 314, 189, 192, 282, 259, 266, 268, 165, 358, 260, 186, 351, 298, 277, 167, 335, 333, 662, 266, 389, 337]
+roundIncome = [0, 121, 137, 138, 175, 164, 163, 182, 200, 199, 314, 189, 192, 282, 259, 266, 268, 165, 358, 260, 186, 351, 298, 277, 167, 335, 333, 662, 266, 389, 337]
 roundBudget = [v-1 for v in roundIncome]
-roundBudget[STARTING_ROUND - 1] += STARTING_CASH - 100 - STARTING_ROUND
+roundBudget[STARTING_ROUND] += STARTING_CASH - 100 - STARTING_ROUND
 
 resultList = []
     
@@ -43,69 +44,90 @@ def nftSellValue(gerryRound, sellRound):
 def checkValue(gerryRounds):
     cash = 0
     gerryRounds.sort()
-    gerryPlaced = [False for v in gerryRounds]
-    nftRounds = [-1 for v in gerryRounds]
+    gerryPlaced = [[-1, 0] for v in gerryRounds]
+    nftRounds = [[-1, 0] for v in gerryRounds]
     cashSpentOnNft = 0
     totalValue = 0
     
-    for roundNumber in range(STARTING_ROUND - 1, 30):
+    for roundNumber in range(STARTING_ROUND, 31):
         cash += roundBudget[roundNumber]
         
         for gerry in range(0, len(gerryRounds)):
-            if (gerryPlaced[gerry] == False):
+            if (gerryPlaced[gerry][0] == -1):
                 if (gerryRounds[gerry] != roundNumber):
                     break
-                elif (gerry > 0 and nftRounds[gerry - 1] == -1) or cash < baseGerryCost:
+                elif (gerry > 0 and nftRounds[gerry - 1][0] == -1) or cash < baseGerryCost:
                     return 
                 else:
-                    gerryPlaced[gerry] = True
+                    gerryPlaced[gerry][0] = roundNumber
                     cash -= baseGerryCost
+                    gerryPlaced[gerry][1] = cash
                     
-            if gerryPlaced[gerry] == True and nftRounds[gerry] == -1:
+            if gerryPlaced[gerry][0] != -1 and nftRounds[gerry][0] == -1:
                 cost = nftCost(gerryRounds[gerry], roundNumber)
                 if cash >= cost:
                     cash -= cost 
-                    cash += round(baseGerryCost * 0.75) #Sells previous Geraldo
-                    nftRounds[gerry] = roundNumber
+                    nftRounds[gerry][1] = cash
+                    nftRounds[gerry][0] = roundNumber
                     cashSpentOnNft += cost
+                    cash += round(baseGerryCost * 0.75) #Sells previous Geraldo
             
     for gerry in range(0, len(gerryRounds)):
-        if nftRounds[gerry] == -1:
+        if nftRounds[gerry][0] == -1:
             return 
-        totalValue += nftSellValue(gerryRounds[gerry], 30)
+        totalValue += nftSellValue(gerryRounds[gerry], 31)
         
-    resultList.append([totalValue, cashSpentOnNft, 
-    [i + 1 for i in gerryRounds], [i + 1 for i in nftRounds]])
-    
+    resultList.append([totalValue, cashSpentOnNft,  
+    gerryPlaced, nftRounds])
+
+def prettyPrint():
+    print("Top " + str(NUMBER_OF_RESULTS) + " best results are: ")
+    resultList.sort(key=lambda res: res[1] - res[0])
+    for i in range(0, min(NUMBER_OF_RESULTS, len(resultList))):
+        print("--------------- Result #" + str(i) + "------------------")
+        result = resultList[i]
+        print("Max profit at r31 is $" + str(result[0]) + " for $" + str(result[1]) + " spent on NFTs.")
+        print("Geraldo placement rounds:")
+        
+        for i in range(0, NUMBER_OF_PLAYERS):
+            print("#" + str(i + 1) + " Geraldo placement round: " + str(result[2][i][0]))
+            print("Income spare: " + str(result[2][i][1]))
+            print()
+                
+            print("#" + str(i + 1) + " NFT placement round: " + str(result[3][i][0]))
+            print("Income spare: " + str(result[3][i][1]))
+            print()
+            
+def compactPrint():
+    print("Top " + str(NUMBER_OF_RESULTS) + " best results are: ")
+    resultList.sort(key=lambda res: res[1] - res[0])
+    print("Format:")
+    print(["r31 value", "cash spent on NFTs", "[Geraldo placements]", "[NFT placements]"])
+    print()
+    for i in range(0, min(NUMBER_OF_RESULTS, len(resultList))):
+        print(resultList[i])
+            
 def main():
-    for i in range(STARTING_ROUND - 1, 30):
+    for i in range(STARTING_ROUND, 31):
         if NUMBER_OF_PLAYERS == 1:
             checkValue([i])
             continue;
             
-        for j in range(i, 30):
+        for j in range(i, 31):
             if NUMBER_OF_PLAYERS == 2:
                 checkValue([i,j])
                 continue;
                 
-            for k in range(j, 30):
+            for k in range(j, 31):
                 if NUMBER_OF_PLAYERS == 3:
                     checkValue([i,j,k])
                     continue;
                 
-                for l in range(k, 30):
+                for l in range(k, 31):
                     checkValue([i,j,k,l])
     
-    print("Top " + str(NUMBER_OF_RESULTS) + " best results are: ")
-    resultList.sort(key=lambda res: res[1] - res[0])
-    for i in range(0, min(NUMBER_OF_RESULTS, len(resultList))):
-        print(resultList[i])
-    print()
-    
-    if len(resultList) > 0: 
-        maxResult = resultList[0]
-        print("Max profit at r31 is " + str(maxResult[0]) + " for " + str(maxResult[1]) + " spent on NFTs.")
-        print("Geraldo placement rounds: " + str(maxResult[2]))
-        print("NFT placement rounds: " + str(maxResult[3]))
-
+    if (PRETTY):
+        prettyPrint()
+    else:
+        compactPrint()
 main()
