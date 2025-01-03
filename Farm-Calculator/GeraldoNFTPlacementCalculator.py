@@ -9,7 +9,8 @@ import math
 STARTING_ROUND = 1
 STARTING_CASH = 850 #If you have extra starting cash MK enabled, take it into account.
 DIFFICULTY = 1 # 0 - easy, 1 - medium, 2 - hard, 3 - impoppable
-NUMBER_OF_PLAYERS = 3
+NUMBER_OF_PLAYERS = 4
+NUMBER_OF_RESULTS = 10
 ############################################
 
 def floor5(number):
@@ -95,16 +96,18 @@ def main():
                 for l in range(k, 30):
                     checkValue([i,j,k,l])
     
-    print("Top 10 best results are: ")
+    print("Top " + str(NUMBER_OF_RESULTS) + " best results are: ")
     resultList.sort(key=lambda res: res[1] - res[0])
-    for i in range(0, min(10, len(resultList))):
+    for i in range(0, min(NUMBER_OF_RESULTS, len(resultList))):
         print(resultList[i])
     print()
     
     if len(resultList) > 0: 
         maxResult = resultList[0]
-        print("Max value sell at r31 is " + str(maxResult[0]) + " for " + str(maxResult[1]) + " spent on NFTs.")
+        print("Max profit at r31 is " + str(maxResult[0]) + " for " + str(maxResult[1]) + " spent on NFTs.")
         print("Geraldo placement rounds: " + str(maxResult[2]))
         print("NFT placement rounds: " + str(maxResult[3]))
 
 main()
+
+print(nftCost(0,30))
