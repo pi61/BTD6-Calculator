@@ -109,5 +109,3 @@ def main():
         print("NFT placement rounds: " + str(maxResult[3]))
 
 main()
-
-print(nftCost(0,30))
