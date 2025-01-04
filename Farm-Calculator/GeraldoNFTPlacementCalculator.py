@@ -18,7 +18,7 @@ PRETTY = True #False for a compact output. True for an extended, readable output
 STARTING_ROUND = 1
 STARTING_CASH = 850 #If you have extra starting cash MK enabled, take it into account.
 DIFFICULTY = 1 # 0 - easy, 1 - medium, 2 - hard, 3 - impoppable
-NUMBER_OF_PLAYERS = 1
+NUMBER_OF_PLAYERS = 4
 NUMBER_OF_RESULTS = 10
 ROUND_TYPE = RoundType.REGULAR 
 SELL_LAST_GERALDO = False #If True, sells the final geraldo. This only matters when selling is required to afford defense in time, which is extremely rare.
@@ -150,7 +150,7 @@ def prettyPrint():
     print("Top " + str(NUMBER_OF_RESULTS) + " best results are: ")
     resultList.sort(key=lambda res: res[1] - res[0])
     for i in range(0, min(NUMBER_OF_RESULTS, len(resultList))):
-        print("--------------- Result #" + str(i) + "------------------")
+        print("--------------- Result #" + str(i + 1) + "------------------")
         result = resultList[i]
         print("Total NFT value at r31 is $" + str(result[0]) + " for $" + str(result[1]) + " spent on NFTs.")
         
