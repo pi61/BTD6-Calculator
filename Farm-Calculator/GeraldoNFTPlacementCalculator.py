@@ -156,7 +156,7 @@ def prettyPrint():
     for i in range(0, min(NUMBER_OF_RESULTS, len(resultList))):
         print("--------------- Result #" + str(i) + "------------------")
         result = resultList[i]
-        print("Max profit at r31 is $" + str(result[0]) + " for $" + str(result[1]) + " spent on NFTs.")
+        print("Profit at r31 is $" + str(result[0]) + " for $" + str(result[1]) + " spent on NFTs.")
         
         for i in range(0, NUMBER_OF_PLAYERS):
             print("#" + str(i + 1) + " Geraldo placement round: " + str(result[2][i][0]))
