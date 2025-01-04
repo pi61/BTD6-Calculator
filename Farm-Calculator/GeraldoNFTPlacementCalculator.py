@@ -25,10 +25,6 @@ SELL_LAST_GERALDO = False #If True, sells the final geraldo. This only matters w
 
 #Cash spent on defense on certain rounds, after getting some income from round. Format: [Round, Cash spent, Duration (optional)]
 DEFENSE_INPUT = [
-    [5, 150], # $150 spent at start of r5
-    [10, 200, 15], # $200 spent on r10 after collecting $15 from round income
-    [10, 250, 7],
-    [7, 300]
 ]
     
 ########### INITIALIZE VARIABLES ###########
@@ -156,7 +152,7 @@ def prettyPrint():
     for i in range(0, min(NUMBER_OF_RESULTS, len(resultList))):
         print("--------------- Result #" + str(i) + "------------------")
         result = resultList[i]
-        print("Profit at r31 is $" + str(result[0]) + " for $" + str(result[1]) + " spent on NFTs.")
+        print("Total NFT value at r31 is $" + str(result[0]) + " for $" + str(result[1]) + " spent on NFTs.")
         
         for i in range(0, NUMBER_OF_PLAYERS):
             print("#" + str(i + 1) + " Geraldo placement round: " + str(result[2][i][0]))
