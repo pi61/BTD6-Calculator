@@ -3,10 +3,15 @@ This calculator determines the optimal round to purchase Geraldo NFT, in order t
 The 10 results with the best (value - cash spent) are printed.
 Geraldos are assumed to be sold after NFT is placed down, except for the final Geraldo.
 Assumes all MK are enabled.
+
+Last Updated 15/03/2025
 '''
 import math
 from enum import Enum
 
+'''
+This class defines cash gained from round 1 to round 31
+'''
 class RoundType(Enum):
     REGULAR = [0, 121, 137, 138, 175, 164, 163, 182, 200, 199, 314, 189, 192, 282, 259, 266, 268, 165, 358, 260, 186, 351, 298, 277, 167, 335, 333, 662, 266, 389, 337]
     VORTEX = [0, 121, 137, 138, 175, 188, 163, 182, 200, 199, 314, 189, 222, 282, 259, 266, 268, 165, 358, 260, 186, 351, 298, 277, 228, 335, 333, 662, 266, 389, 378]
@@ -14,7 +19,7 @@ class RoundType(Enum):
     CUSTOM = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #Always leave a starting 0, for "Round 0"
     
 ############## USER INPUT ##################
-PRETTY = True #False for a compact output. True for an extended, readable output
+PRETTY = False #False for a compact output. True for an extended, readable output
 STARTING_ROUND = 1
 STARTING_CASH = 850 #If you have extra starting cash MK enabled, take it into account.
 DIFFICULTY = 1 # 0 - easy, 1 - medium, 2 - hard, 3 - impoppable
@@ -28,12 +33,18 @@ DEFENSE_INPUT = [
 ]
     
 ########### INITIALIZE VARIABLES ###########
+'''
+Rounds DOWN to the nearest 5
+'''
 def floor5(number):
     return math.floor(number / 5) * 5
-    
+ 
+'''
+Rounds to the nearest 5
+'''
 def roundTo5(number):
     return round(number / 5) * 5
-    
+
 difficultyMultiplier = [0.85, 1, 1.08, 1.2]
 baseGerryCost = roundTo5(750 * 0.9 * difficultyMultiplier[DIFFICULTY])
 baseNFTCost = 650 * difficultyMultiplier[DIFFICULTY]
@@ -87,17 +98,29 @@ if (debt > 0):
 resultList = [] 
 
 ############# FUNCTIONS ####################
+
+'''
+Returns the nft buy cost at round <nftRound>, 
+given that gerry is placed on <gerryRound>
+'''
 def nftCost(gerryRound, nftRound):
-    power = max(0, nftRound - gerryRound - 1)
+    power = max(0, nftRound - gerryRound)
     multiplier = 1.1 ** power
     return roundTo5(baseNFTCost * multiplier)
 
+'''
+Returns the sell value of nft at round <sellRound>, 
+given that gerry is placed on <gerryRound>
+'''
 def nftSellValue(gerryRound, sellRound):
-    power = max(0, sellRound - gerryRound - 1)
+    power = max(0, sellRound - gerryRound)
     multiplier = 0.95 * (1.1 ** power) 
     sellValue = math.ceil(floor5(baseNFTCost) * (multiplier + 0.05))
     return sellValue
-    
+
+'''
+Returns r31 sell value given that gerries are placed on [gerryRounds]
+'''
 def checkValue(gerryRounds):
     totalBudget = 0
     defensiveBudget = 0
@@ -146,6 +169,9 @@ def checkValue(gerryRounds):
     resultList.append([totalValue, cashSpentOnNft,  
     gerryPlaced, nftRounds])
 
+'''
+Print result in readable format
+'''
 def prettyPrint():
     print("Top " + str(NUMBER_OF_RESULTS) + " best results are: ")
     resultList.sort(key=lambda res: res[1] - res[0])
@@ -163,6 +189,9 @@ def prettyPrint():
             print("Income spare: " + str(result[3][i][1]))
             print()
             
+'''
+Print compated result
+'''
 def compactPrint():
     print("Top " + str(NUMBER_OF_RESULTS) + " best results are: ")
     resultList.sort(key=lambda res: res[1] - res[0])
