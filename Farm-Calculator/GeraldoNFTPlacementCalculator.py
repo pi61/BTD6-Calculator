@@ -23,13 +23,14 @@ PRETTY = False #False for a compact output. True for an extended, readable outpu
 STARTING_ROUND = 1
 STARTING_CASH = 850 #If you have extra starting cash MK enabled, take it into account.
 DIFFICULTY = 1 # 0 - easy, 1 - medium, 2 - hard, 3 - impoppable
-NUMBER_OF_PLAYERS = 4
+NUMBER_OF_PLAYERS = 1
 NUMBER_OF_RESULTS = 10
 ROUND_TYPE = RoundType.REGULAR 
 SELL_LAST_GERALDO = False #If True, sells the final geraldo. This only matters when selling is required to afford defense in time, which is extremely rare.
 
-#Cash spent on defense on certain rounds, after getting some income from round. Format: [Round, Cash spent, Duration (optional)]
+#Cash spent on defense on certain rounds, after getting some income from round. Format: [Round, Cash spent, Duration (Optional, default to 0)]
 DEFENSE_INPUT = [
+    [30, 7048]
 ]
     
 ########### INITIALIZE VARIABLES ###########
@@ -48,10 +49,11 @@ def roundTo5(number):
 difficultyMultiplier = [0.85, 1, 1.08, 1.2]
 baseGerryCost = roundTo5(750 * 0.9 * difficultyMultiplier[DIFFICULTY])
 baseNFTCost = 650 * difficultyMultiplier[DIFFICULTY]
-
 roundIncome = ROUND_TYPE.value
+
 roundBudget = [v - 1 for v in roundIncome]
-roundBudget[STARTING_ROUND - 1] = STARTING_CASH - 100 - STARTING_ROUND
+roundBudget[STARTING_ROUND - 1] = STARTING_CASH
+
 roundFarmingBudget = [v for v in roundBudget]
 roundDefensiveBudget = [0 for v in roundFarmingBudget]
 
@@ -59,10 +61,14 @@ for i in DEFENSE_INPUT:
     if (len(i) == 2):
         i.append(0)
 
-DEFENSE_INPUT.sort(key=lambda arr: (arr[0],arr[2], arr[1]))
+# Calculates farming budget
+DEFENSE_INPUT.sort(key=lambda arr: (arr[0],arr[2], arr[1])) 
 defenseRounds = [[] for i in range(0,31)]
 for defense in DEFENSE_INPUT:
     roundNumber = defense[0]
+    
+    # Error checking, exit program if the input value is higher than cash earned from pops
+    # during the round.
     if (roundFarmingBudget[roundNumber] - (100 + roundNumber - 1) < defense[2]):
         print("Duration value for " + str(defense) + " is too large.")
         print("Round " + str(defense[0]) + " income duration is " + str(roundFarmingBudget[roundNumber] - (100 + roundNumber - 1)))
@@ -74,12 +80,20 @@ for defense in DEFENSE_INPUT:
 #Modify farming budget to account for defensive budget
 debt = 0
 for i in range(30, STARTING_ROUND - 1, -1):
+    # Propagates backwards to optimally assign round budgets to defenses.
     defenses = defenseRounds[i]
-    startingCash = 0
-    sumOfSpending = 0
+    
+    # Needs to start round with this amount of cash in order to afford everything on time.
+    startingCash = 0 
+    
+    # Sum of spending for defenses in current round.
+    sumOfSpending = 0 
     
     for defense in defenses:
-        sumOfSpending += defense[1]
+        sumOfSpending += defense[1] 
+        
+        # You can reach sumOfSpending by the time you purchase the final defense,
+        # if and only if you can afford everything before on time.
         startingCash = max(0, sumOfSpending - defense[2])
     
     #Calculate defense saveup backward, prevent overspending on Geraldos and NFTs
@@ -203,6 +217,7 @@ def compactPrint():
         
 ############### DRIVER FUNCTION ############
 def main():
+    # Brute force through every possible gerry placement rounds possible
     for i in range(STARTING_ROUND, 31):
         if NUMBER_OF_PLAYERS == 1:
             checkValue([i])
